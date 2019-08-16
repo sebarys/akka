@@ -12,8 +12,6 @@ import akka.actor.typed.javadsl.*;
 import akka.actor.testkit.typed.javadsl.TestProbe;
 import org.junit.Test;
 import org.scalatest.junit.JUnitSuite;
-import scala.concurrent.Await;
-import scala.concurrent.duration.FiniteDuration;
 
 import java.net.URI;
 import java.time.Duration;
@@ -359,13 +357,8 @@ public class InteractionPatternsTest extends JUnitSuite {
     final ActorSystem<Object> system = ActorSystem.create(Behaviors.empty(), "timers-sample");
     TestProbe<Batch> probe = TestProbe.create("batcher", system);
     ActorRef<Msg> bufferer =
-        Await.result(
-            system.systemActorOf(
-                behavior(probe.ref(), Duration.ofSeconds(1), 10),
-                "batcher",
-                Props.empty(),
-                akka.util.Timeout.create(Duration.ofSeconds(1))),
-            FiniteDuration.create(3, TimeUnit.SECONDS));
+        system.systemActorOf(
+            behavior(probe.ref(), Duration.ofSeconds(1), 10), "batcher", Props.empty());
 
     ExcitingMessage msgOne = new ExcitingMessage("one");
     ExcitingMessage msgTwo = new ExcitingMessage("two");
