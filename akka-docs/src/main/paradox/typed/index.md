@@ -17,7 +17,7 @@
 * [stream](stream.md)
 * [fsm](fsm.md)
 * [testing](testing.md)
-* [from-classic](from-classic.md)
 * [style-guide](style-guide.md)
+* [from-classic](from-classic.md)
 
 @@@
