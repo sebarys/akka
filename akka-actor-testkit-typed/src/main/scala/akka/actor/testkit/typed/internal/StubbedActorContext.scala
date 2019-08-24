@@ -187,12 +187,12 @@ private[akka] final class FunctionRef[-T](override val path: ActorPath, send: (T
    * The log entries logged through context.log.{debug, info, warn, error} are captured and can be inspected through
    * this method.
    */
-  def logEntries: List[CapturedLogEvent] = ???
+  def logEntries: List[CapturedLogEvent] = ??? // FIXME BehaviorTestKit logging
 
   /**
    * Clear the log entries.
    */
-  def clearLog(): Unit = ???
+  def clearLog(): Unit = ??? // FIXME FIXME BehaviorTestKit logging
 
   override private[akka] def onUnhandled(msg: T): Unit =
     unhandled = msg :: unhandled

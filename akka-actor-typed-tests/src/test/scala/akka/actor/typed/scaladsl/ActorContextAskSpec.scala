@@ -6,20 +6,20 @@ package akka.actor.typed.scaladsl
 
 import akka.actor.typed.scaladsl.adapter._
 import akka.actor.typed.{ ActorRef, PostStop, Props }
-import akka.testkit.EventFilter
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import com.typesafe.config.ConfigFactory
-
 import scala.concurrent.TimeoutException
 import scala.concurrent.duration._
 import scala.reflect.ClassTag
 import scala.util.{ Failure, Success }
+
+import akka.actor.testkit.typed.scaladsl.LoggingEventFilter
 import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
 import org.scalatest.WordSpecLike
 
 object ActorContextAskSpec {
   val config = ConfigFactory.parseString("""
-      akka.loggers = ["akka.testkit.TestEventListener"]
+      akka.loggers = [akka.event.slf4j.Slf4jLogger]
       ping-pong-dispatcher {
         executor = thread-pool-executor
         type = PinnedDispatcher
@@ -104,7 +104,7 @@ class ActorContextAskSpec extends ScalaTestWithActorTestKit(ActorContextAskSpec.
           }
       }
 
-      EventFilter[NotImplementedError](occurrences = 1, start = "Pong").intercept {
+      LoggingEventFilter[NotImplementedError](occurrences = 1, start = "Pong").intercept {
         spawn(snitch)
       }
 
@@ -126,11 +126,7 @@ class ActorContextAskSpec extends ScalaTestWithActorTestKit(ActorContextAskSpec.
         }
       }
 
-      EventFilter.warning(occurrences = 1, message = "received dead letter: boo").intercept {
-        EventFilter.info(occurrences = 1, start = "Message [java.lang.String]").intercept {
-          spawn(snitch)
-        }
-      }
+      spawn(snitch)
 
       val exc = probe.expectMessageType[TimeoutException]
       exc.getMessage should include("had already been terminated")

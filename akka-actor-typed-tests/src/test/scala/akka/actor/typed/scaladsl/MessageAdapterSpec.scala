@@ -4,21 +4,23 @@
 
 package akka.actor.typed.scaladsl
 
+import akka.actor.UnhandledMessage
 import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
 import akka.actor.testkit.typed.TestException
+import akka.actor.testkit.typed.scaladsl.LoggingEventFilter
 import akka.actor.typed.scaladsl.adapter._
 import akka.actor.typed.ActorRef
 import akka.actor.typed.Behavior
 import akka.actor.typed.PostStop
 import akka.actor.typed.Props
-import akka.testkit.EventFilter
 import akka.actor.testkit.typed.scaladsl.TestProbe
+import akka.actor.typed.eventstream.EventStream
 import com.typesafe.config.ConfigFactory
 import org.scalatest.WordSpecLike
 
 object MessageAdapterSpec {
   val config = ConfigFactory.parseString("""
-      akka.loggers = ["akka.testkit.TestEventListener"]
+      akka.loggers = [akka.event.slf4j.Slf4jLogger]
       akka.log-dead-letters = off
       ping-pong-dispatcher {
         executor = thread-pool-executor
@@ -155,9 +157,10 @@ class MessageAdapterSpec extends ScalaTestWithActorTestKit(MessageAdapterSpec.co
         }
       }
 
-      EventFilter.warning(start = "unhandled message", occurrences = 1).intercept {
-        spawn(snitch)
-      }
+      val unhandledProbe = createTestProbe[UnhandledMessage]()
+      system.eventStream ! EventStream.Subscribe(unhandledProbe.ref)
+      spawn(snitch)
+      unhandledProbe.receiveMessage()
 
       probe.expectMessage(Wrapped("1", Pong1("hello-1")))
       // hello-2 discarded because it was wrong type
@@ -199,11 +202,7 @@ class MessageAdapterSpec extends ScalaTestWithActorTestKit(MessageAdapterSpec.co
           }
       }
 
-      EventFilter.warning(pattern = ".*received dead letter.*", occurrences = 1).intercept {
-        EventFilter[TestException](occurrences = 1).intercept {
-          spawn(snitch)
-        }
-      }
+      spawn(snitch)
 
       probe.expectMessage(Wrapped(1, Pong("hello")))
       probe.expectMessage(Wrapped(2, Pong("hello")))
@@ -250,11 +249,9 @@ class MessageAdapterSpec extends ScalaTestWithActorTestKit(MessageAdapterSpec.co
         behv(count = 1)
       }
 
-      EventFilter.warning(pattern = ".*received dead letter.*", occurrences = 2).intercept {
-        // Not expecting "Exception thrown out of adapter. Stopping myself"
-        EventFilter[TestException](message = "boom", occurrences = 1).intercept {
-          spawn(snitch)
-        }
+      // Not expecting "Exception thrown out of adapter. Stopping myself"
+      LoggingEventFilter[TestException](message = "boom", occurrences = 1).intercept {
+        spawn(snitch)
       }
 
       probe.expectMessage(1)
