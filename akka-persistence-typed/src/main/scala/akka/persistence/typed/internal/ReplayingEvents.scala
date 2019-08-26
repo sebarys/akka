@@ -181,7 +181,7 @@ private[akka] final class ReplayingEvents[C, E, S](
 
   def onSnapshotterResponse(response: SnapshotProtocol.Response): Behavior[InternalProtocol] = {
     setup.log
-      .warning("Unexpected [{}] from SnapshotStore, already in replaying events state.", Logging.simpleName(response))
+      .warn("Unexpected [{}] from SnapshotStore, already in replaying events state.", Logging.simpleName(response))
     Behaviors.unhandled // ignore the response
   }
 
@@ -202,7 +202,7 @@ private[akka] final class ReplayingEvents[C, E, S](
       setup.log.debug(
         "Recovery failure for persistenceId [{}] after {}",
         setup.persistenceId,
-        (System.nanoTime() - state.recoveryStartTime).nanos.pretty)
+        (System.nanoTime() - state.recoveryStartTime).nanos.pretty: Any)
     }
     val sequenceNr = state.seqNr
 
@@ -226,7 +226,7 @@ private[akka] final class ReplayingEvents[C, E, S](
         setup.log.debug(
           "Recovery for persistenceId [{}] took {}",
           setup.persistenceId,
-          (System.nanoTime() - state.recoveryStartTime).nanos.pretty)
+          (System.nanoTime() - state.recoveryStartTime).nanos.pretty: Any)
       }
       setup.onSignal(state.state, RecoveryCompleted, catchAndLog = false)
 

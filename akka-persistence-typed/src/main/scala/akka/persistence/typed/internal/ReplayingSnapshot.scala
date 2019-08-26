@@ -86,7 +86,7 @@ private[akka] class ReplayingSnapshot[C, E, S](override val setup: BehaviorSetup
   private def onRecoveryFailure(cause: Throwable): Behavior[InternalProtocol] = {
     onRecoveryFailed(setup.context, cause)
     setup.cancelRecoveryTimer()
-    setup.log.error(cause, s"Persistence failure when replaying snapshot. ${cause.getMessage}")
+    setup.log.error(s"Persistence failure when replaying snapshot. $cause", cause)
     Behaviors.stopped
   }
 

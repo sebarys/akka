@@ -6,8 +6,8 @@ package akka.persistence.typed.internal
 
 import scala.concurrent.ExecutionContext
 import scala.util.control.NonFatal
+
 import akka.actor.Cancellable
-import akka.actor.typed.Logger
 import akka.actor.typed.scaladsl.ActorContext
 import akka.actor.ActorRef
 import akka.actor.typed.Signal
@@ -18,6 +18,7 @@ import akka.persistence.typed.scaladsl.EventSourcedBehavior
 import akka.persistence.typed.scaladsl.RetentionCriteria
 import akka.util.ConstantFun
 import akka.util.OptionVal
+import org.slf4j.Logger
 
 /**
  * INTERNAL API
@@ -69,7 +70,11 @@ private[akka] final class BehaviorSetup[C, E, S](
       case OptionVal.Some(l) => l
       case OptionVal.None    =>
         // lazy init if mdc changed
-        val l = context.log.withMdc(mdc)
+        // FIXME how to do this?
+        // val l = context.log.withMdc(mdc)
+        if (mdc.nonEmpty)
+          println(s"# FIXME: not using mdc: $mdc") // FIXME
+        val l = context.log
         _log = OptionVal.Some(l)
         l
     }
@@ -121,9 +126,10 @@ private[akka] final class BehaviorSetup[C, E, S](
     } catch {
       case NonFatal(ex) =>
         if (catchAndLog)
-          log.error(ex, s"Error while processing signal [{}]", signal)
+          log.error(s"Error while processing signal [$signal]: $ex", ex)
         else {
-          log.debug(s"Error while processing signal [{}]: {}", signal, ex)
+          if (log.isDebugEnabled)
+            log.debug(s"Error while processing signal [$signal]: $ex", ex)
           throw ex
         }
     }

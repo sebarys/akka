@@ -134,7 +134,7 @@ private[akka] object Running {
           s"Handled command [{}], resulting effect: [{}], side effects: [{}]",
           msg.getClass.getName,
           effect,
-          sideEffects.size)
+          sideEffects.size.toString)
 
       effect match {
         case CompositeEffect(eff, currentSideEffects) =>
@@ -371,14 +371,15 @@ private[akka] object Running {
           Some(SnapshotCompleted(SnapshotMetadata.fromUntyped(meta)))
 
         case SaveSnapshotFailure(meta, error) =>
-          setup.log.warning("Failed to save snapshot given metadata [{}] due to [{}]", meta, error.getMessage)
+          // FIXME consistent wording and usage of these "due to" exception
+          setup.log.warn("Failed to save snapshot given metadata [{}] due to [{}]", meta, error: Any)
           Some(SnapshotFailed(SnapshotMetadata.fromUntyped(meta), error))
 
         case _ =>
           None
       }
 
-      setup.log.debug("Received snapshot response [{}], emitting signal [{}].", response, signal)
+      setup.log.debug("Received snapshot response [{}], emitting signal [{}].", response, signal: Any)
       signal.foreach(setup.onSignal(state.state, _, catchAndLog = false))
     }
 

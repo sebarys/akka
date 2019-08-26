@@ -12,8 +12,6 @@ import akka.actor.typed.javadsl.ActorContext;
 import akka.actor.typed.javadsl.Behaviors;
 import akka.persistence.typed.PersistenceId;
 import akka.persistence.typed.RecoveryCompleted;
-import akka.testkit.EventFilter;
-import akka.testkit.TestEvent;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import org.junit.ClassRule;
@@ -26,7 +24,7 @@ public class LoggerSourceTest extends JUnitSuite {
 
   private static final Config config =
       ConfigFactory.parseString(
-          "akka.loggers = [akka.testkit.TestEventListener] \n"
+          "akka.loggers = [akka.event.slf4j.Slf4jLogger] \n"
               + "akka.persistence.journal.plugin = \"akka.persistence.journal.inmem\" \n"
               + "akka.persistence.journal.inmem.test-serialization = on \n");
 
@@ -96,14 +94,14 @@ public class LoggerSourceTest extends JUnitSuite {
 
   public LoggerSourceTest() {
     // FIXME ##24348 silence logging in a proper way
-    akka.actor.typed.javadsl.Adapter.toUntyped(testKit.system())
-        .eventStream()
-        .publish(
-            new TestEvent.Mute(
-                akka.japi.Util.immutableSeq(
-                    new EventFilter[] {
-                      EventFilter.warning(null, null, "No default snapshot store", null, 1)
-                    })));
+    //    akka.actor.typed.javadsl.Adapter.toUntyped(testKit.system())
+    //        .eventStream()
+    //        .publish(
+    //            new TestEvent.Mute(
+    //                akka.japi.Util.immutableSeq(
+    //                    new EventFilter[] {
+    //                      EventFilter.warning(null, null, "No default snapshot store", null, 1)
+    //                    })));
   }
 
   @Test

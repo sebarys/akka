@@ -93,19 +93,20 @@ private[akka] final case class EventSourcedBehaviorImpl[Command, Event, State](
       case (_, SnapshotCompleted(meta)) =>
         ctx.log.debug("Save snapshot successful, snapshot metadata [{}].", meta)
       case (_, SnapshotFailed(meta, failure)) =>
-        ctx.log.error(failure, "Save snapshot failed, snapshot metadata [{}].", meta)
+        // FIXME look into if we should include the exception in the message and as second param?
+        ctx.log.error(s"Save snapshot failed, snapshot metadata [$meta] due to [$failure].", failure)
       case (_, DeleteSnapshotsCompleted(DeletionTarget.Individual(meta))) =>
         ctx.log.debug("Persistent snapshot [{}] deleted successfully.", meta)
       case (_, DeleteSnapshotsCompleted(DeletionTarget.Criteria(criteria))) =>
         ctx.log.debug("Persistent snapshots given criteria [{}] deleted successfully.", criteria)
       case (_, DeleteSnapshotsFailed(DeletionTarget.Individual(meta), failure)) =>
-        ctx.log.warning("Failed to delete snapshot with meta [{}] due to [{}].", meta, failure)
+        ctx.log.warn("Failed to delete snapshot with meta [{}] due to [{}].", meta, failure: Any)
       case (_, DeleteSnapshotsFailed(DeletionTarget.Criteria(criteria), failure)) =>
-        ctx.log.warning("Failed to delete snapshots given criteria [{}] due to [{}].", criteria, failure)
+        ctx.log.warn("Failed to delete snapshots given criteria [{}] due to [{}].", criteria, failure: Any)
       case (_, DeleteEventsCompleted(toSequenceNr)) =>
         ctx.log.debug("Events successfully deleted to sequence number [{}].", toSequenceNr)
       case (_, DeleteEventsFailed(toSequenceNr, failure)) =>
-        ctx.log.warning("Failed to delete events to sequence number [{}] due to [{}].", toSequenceNr, failure)
+        ctx.log.warn("Failed to delete events to sequence number [{}] due to [{}].", toSequenceNr, failure: Any)
     }
 
     // do this once, even if the actor is restarted
