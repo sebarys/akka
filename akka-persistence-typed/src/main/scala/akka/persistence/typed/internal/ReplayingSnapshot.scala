@@ -32,7 +32,7 @@ import akka.util.unused
 private[akka] object ReplayingSnapshot {
 
   def apply[C, E, S](setup: BehaviorSetup[C, E, S], receivedPoisonPill: Boolean): Behavior[InternalProtocol] =
-    new ReplayingSnapshot(setup.setMdc(MDC.ReplayingSnapshot)).createBehavior(receivedPoisonPill)
+    new ReplayingSnapshot(setup.setMdcPhase(PersistenceMdc.ReplayingSnapshot)).createBehavior(receivedPoisonPill)
 
 }
 

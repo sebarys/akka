@@ -56,7 +56,7 @@ private[akka] object ReplayingEvents {
     Behaviors.setup { _ =>
       // protect against event recovery stalling forever because of journal overloaded and such
       setup.startRecoveryTimer(snapshot = false)
-      new ReplayingEvents[C, E, S](setup.setMdc(MDC.ReplayingEvents), state)
+      new ReplayingEvents[C, E, S](setup.setMdcPhase(PersistenceMdc.ReplayingEvents), state)
     }
 
 }

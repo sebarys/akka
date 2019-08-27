@@ -6,7 +6,7 @@
             <onMatch>DENY</onMatch>
         </filter>
         <encoder>
-            <pattern>%date{ISO8601} %-5level %logger %X{akkaSource} %X{sourceThread} - %msg%n</pattern>
+            <pattern>%date{ISO8601} %-5level %logger %X{akkaSource} %X{sourceThread} { "persistenceId": "%X{persistenceId}", "persistencePhase": "%X{persistencePhase}" } - %msg%n</pattern>
         </encoder>
     </appender>
     <root level="DEBUG">
