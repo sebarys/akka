@@ -16,6 +16,10 @@ object LoggingEvent {
     new LoggingEvent(level, loggerName, threadName, message, timeStamp, None, None, Map.empty)
 }
 
+/**
+ * Representation of logging event when testing with [[akka.actor.testkit.typed.scaladsl.LoggingEventFilter]]
+ * or [[akka.actor.testkit.typed.javadsl.LoggingEventFilter]].
+ */
 final case class LoggingEvent(
     level: Level,
     loggerName: String,
@@ -42,7 +46,7 @@ final case class LoggingEvent(
    * Java API
    */
   def getMdc: java.util.Map[String, String] = {
-    import scala.collection.JavaConverters._
+    import akka.util.ccompat.JavaConverters._
     mdc.asJava
   }
 

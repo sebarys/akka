@@ -367,8 +367,7 @@ private[akka] object Running {
           Some(SnapshotCompleted(SnapshotMetadata.fromUntyped(meta)))
 
         case SaveSnapshotFailure(meta, error) =>
-          // FIXME consistent wording and usage of these "due to" exception
-          setup.log.warn("Failed to save snapshot given metadata [{}] due to [{}]", meta, error: Any)
+          setup.log.warn("Failed to save snapshot given metadata [{}] due to: {}", meta, error.getMessage: Any)
           Some(SnapshotFailed(SnapshotMetadata.fromUntyped(meta), error))
 
         case _ =>

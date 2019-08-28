@@ -37,7 +37,7 @@ class Device(context: ActorContext[Device.DeviceMessage], groupId: String, devic
 
   var lastTemperatureReading: Option[Double] = None
 
-  context.log.info("Device actor {}-{} started", groupId, deviceId)
+  context.log.info("Device actor {}-{} started", groupId, deviceId: Any)
 
   override def onMessage(msg: DeviceMessage): Behavior[DeviceMessage] = {
     msg match {
@@ -58,7 +58,7 @@ class Device(context: ActorContext[Device.DeviceMessage], groupId: String, devic
 
   override def onSignal: PartialFunction[Signal, Behavior[DeviceMessage]] = {
     case PostStop =>
-      context.log.info("Device actor {}-{} stopped", groupId, deviceId)
+      context.log.info("Device actor {}-{} stopped", groupId, deviceId: Any)
       this
   }
 

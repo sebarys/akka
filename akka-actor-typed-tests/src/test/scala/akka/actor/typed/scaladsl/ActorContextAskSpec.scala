@@ -4,7 +4,6 @@
 
 package akka.actor.typed.scaladsl
 
-import akka.actor.typed.scaladsl.adapter._
 import akka.actor.typed.{ ActorRef, PostStop, Props }
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import com.typesafe.config.ConfigFactory
@@ -32,8 +31,6 @@ object ActorContextAskSpec {
 }
 
 class ActorContextAskSpec extends ScalaTestWithActorTestKit(ActorContextAskSpec.config) with WordSpecLike {
-
-  implicit val untyped = system.toUntyped // FIXME #24348: eventfilter support in typed testkit
 
   "The Scala DSL ActorContext" must {
 

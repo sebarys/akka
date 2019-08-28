@@ -81,7 +81,7 @@ class AskSpec extends ScalaTestWithActorTestKit("""
       system.eventStream ! EventStream.Subscribe(unhandledProbe.ref)
 
       val answer: Future[String] = actor.ask(Foo("bar", _))
-      // FIXME why no UnhandledMessage?
+      // FIXME #26537 why no UnhandledMessage?
       //unhandledProbe.receiveMessage()
       val result = answer.failed.futureValue
       result shouldBe a[TimeoutException]

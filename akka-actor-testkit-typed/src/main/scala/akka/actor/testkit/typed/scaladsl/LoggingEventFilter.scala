@@ -15,7 +15,7 @@ import akka.testkit.TestKit
 import akka.testkit.TestKitExtension
 import org.slf4j.event.Level
 
-// FIXME this is a close copy of classic EventFilter so far. Design a better scaladsl and javadsl API.
+// FIXME #26537 this is a close copy of classic EventFilter so far. Design a better scaladsl and javadsl API.
 
 /**
  * Facilities for selectively filtering out expected events from logging so
@@ -74,7 +74,7 @@ abstract class LoggingEventFilter(occurrences: Int) {
   def interceptLogger[T](loggerName: String)(code: => T)(implicit system: ActorSystem[_]): T = {
     TestAppender.setupTestAppender(loggerName)
     TestAppender.addFilter(loggerName, this)
-    // FIXME other setting for leeway
+    // FIXME #26537 other setting for leeway
     import akka.actor.typed.scaladsl.adapter._
     val leeway = TestKitExtension(system.toUntyped).TestEventFilterLeeway
     try {
@@ -97,7 +97,7 @@ abstract class LoggingEventFilter(occurrences: Int) {
   protected val message: Either[String, Regex] = Left("")
   protected val complete: Boolean = false
 
-  // FIXME source not implemented (yet)
+  // FIXME #26537 source not implemented (yet)
   protected val SourceTodo = "SourceTodo"
 
   /**

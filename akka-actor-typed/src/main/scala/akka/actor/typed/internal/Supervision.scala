@@ -81,19 +81,14 @@ private abstract class AbstractSupervisor[I, Thr <: Throwable](strategy: Supervi
     if (strategy.loggingEnabled) {
       val unwrapped = UnstashException.unwrap(t)
       val logMessage = s"Supervisor $this saw failure: ${unwrapped.getMessage}"
+      val logger = ctx.asScala.log
       strategy.logLevel match {
-        case Level.ERROR =>
-          ctx.asScala.log.error(logMessage, unwrapped)
-        case Level.WARN =>
-          ctx.asScala.log.warn(logMessage, unwrapped)
-        case Level.INFO =>
-          ctx.asScala.log.info(logMessage, unwrapped)
-        case Level.DEBUG =>
-          ctx.asScala.log.debug(logMessage, unwrapped)
-        case Level.TRACE =>
-          ctx.asScala.log.trace(logMessage, unwrapped)
-        case _ =>
-          ctx.asScala.log.error(logMessage, unwrapped)
+        case Level.ERROR => logger.error(logMessage, unwrapped)
+        case Level.WARN  => logger.warn(logMessage, unwrapped)
+        case Level.INFO  => logger.info(logMessage, unwrapped)
+        case Level.DEBUG => logger.debug(logMessage, unwrapped)
+        case Level.TRACE => logger.trace(logMessage, unwrapped)
+        case _           => logger.error(logMessage, unwrapped)
       }
     }
   }

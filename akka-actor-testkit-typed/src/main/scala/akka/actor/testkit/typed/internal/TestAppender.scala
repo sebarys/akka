@@ -15,16 +15,21 @@ import org.slf4j.event.Level
 
 /**
  * INTERNAL API
+ *
+ * The `TestAppender` emits the logging events to the registered [[LoggingEventFilter]], which
+ * are added and removed to the appender dynamically from tests.
+ *
+ * `TestAppender` is currently requiring Logback as SLF4J implementation.
+ * Similar can probably be implemented with other backends, such as Log4j2.
  */
 @InternalApi private[akka] object TestAppender {
   private val TestAppenderName = "AkkaTestAppender"
 
-  private def loggerNameOrRoot(loggerName: String): String =
-    if (loggerName == "") org.slf4j.Logger.ROOT_LOGGER_NAME else loggerName
+  // FIXME #26537 detect if logback is not in classpath and fail more friendly,
+  // also detect if other slf4j impl is used and fail friendly
 
   def setupTestAppender(loggerName: String): Unit = {
-    val logger = LoggerFactory.getLogger(loggerNameOrRoot(loggerName))
-    val logbackLogger = logger.asInstanceOf[ch.qos.logback.classic.Logger]
+    val logbackLogger = getLogbackLogger(loggerName)
     logbackLogger.getAppender(TestAppenderName) match {
       case null =>
         logbackLogger.getLoggerContext
@@ -40,29 +45,33 @@ import org.slf4j.event.Level
     }
   }
 
-  def addFilter(loggerName: String, filter: LoggingEventFilter): Unit = {
-    // FIXME DRY remove duplication between addFilter and removeFilter, and maybe also setup
-    val logger = LoggerFactory.getLogger(loggerNameOrRoot(loggerName))
-    val logbackLogger = logger.asInstanceOf[ch.qos.logback.classic.Logger]
-    logbackLogger.getAppender(TestAppenderName) match {
+  def addFilter(loggerName: String, filter: LoggingEventFilter): Unit =
+    getTestAppender(loggerName).addTestFilter(filter)
+
+  def removeFilter(loggerName: String, filter: LoggingEventFilter): Unit =
+    getTestAppender(loggerName).removeTestFilter(filter)
+
+  private def loggerNameOrRoot(loggerName: String): String =
+    if (loggerName == "") org.slf4j.Logger.ROOT_LOGGER_NAME else loggerName
+
+  private def getLogbackLogger(loggerName: String): ch.qos.logback.classic.Logger = {
+    LoggerFactory.getLogger(loggerNameOrRoot(loggerName)) match {
+      case logger: ch.qos.logback.classic.Logger => logger
       case null =>
-        throw new IllegalStateException(s"No $TestAppenderName was setup for logger [${logger.getName}]")
-      case testAppender: TestAppender =>
-        testAppender.addTestFilter(filter)
+        throw new IllegalArgumentException(s"TestAppender couldn't find logger for [$loggerName].")
       case other =>
-        throw new IllegalStateException(
-          s"Unexpected $TestAppenderName already added for logger [${logger.getName}]: $other")
+        throw new IllegalArgumentException(
+          s"TestAppender requires Logback logger for [$loggerName], " +
+          s"it was a [${other.getClass.getName}]")
     }
   }
 
-  def removeFilter(loggerName: String, filter: LoggingEventFilter): Unit = {
-    val logger = LoggerFactory.getLogger(loggerNameOrRoot(loggerName))
-    val logbackLogger = logger.asInstanceOf[ch.qos.logback.classic.Logger]
-    logbackLogger.getAppender(TestAppenderName) match {
+  private def getTestAppender(loggerName: String): TestAppender = {
+    val logger = getLogbackLogger(loggerName)
+    logger.getAppender(TestAppenderName) match {
+      case testAppender: TestAppender => testAppender
       case null =>
         throw new IllegalStateException(s"No $TestAppenderName was setup for logger [${logger.getName}]")
-      case testAppender: TestAppender =>
-        testAppender.removeTestFilter(filter)
       case other =>
         throw new IllegalStateException(
           s"Unexpected $TestAppenderName already added for logger [${logger.getName}]: $other")
@@ -79,7 +88,7 @@ import org.slf4j.event.Level
 
   // invocations are synchronized via doAppend in AppenderBase
   override def append(event: ILoggingEvent): Unit = {
-    import scala.collection.JavaConverters._
+    import akka.util.ccompat.JavaConverters._
 
     val throwable = event.getThrowableProxy match {
       case p: ThrowableProxy =>

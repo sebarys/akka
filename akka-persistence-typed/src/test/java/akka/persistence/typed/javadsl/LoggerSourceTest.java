@@ -93,7 +93,7 @@ public class LoggerSourceTest extends JUnitSuite {
           });
 
   public LoggerSourceTest() {
-    // FIXME ##24348 silence logging in a proper way
+    // FIXME #26537 #24348 silence logging in a proper way
     //    akka.actor.typed.javadsl.Adapter.toUntyped(testKit.system())
     //        .eventStream()
     //        .publish(
@@ -108,10 +108,10 @@ public class LoggerSourceTest extends JUnitSuite {
   public void verifyLoggerClass() {
     ActorRef<String> ref = testKit.spawn(behavior);
     ref.tell("command");
+    // FIXME #26537 use javadsl.LoggingEventFilter when ready
     // no Java testkit support for custom event filters to look at the logger class
     // so this is a manual-occular test for now (additionally it requires a small change to
     // stdoutlogger to print log event class name)
-    // FIXME #24348: eventfilter support in typed testkit
     TestProbe<Object> probe = testKit.createTestProbe();
     ref.tell("stop");
     probe.expectTerminated(ref);

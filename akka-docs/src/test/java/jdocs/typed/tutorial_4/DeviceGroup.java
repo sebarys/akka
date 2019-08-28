@@ -72,7 +72,7 @@ public class DeviceGroup extends AbstractBehavior<DeviceGroupMessage> {
     } else {
       context
           .getLog()
-          .warning(
+          .warn(
               "Ignoring TrackDevice request for {}. This actor is responsible for {}.",
               groupId,
               this.groupId);

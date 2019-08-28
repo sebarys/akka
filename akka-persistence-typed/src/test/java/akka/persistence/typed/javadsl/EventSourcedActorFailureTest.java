@@ -96,7 +96,7 @@ public class EventSourcedActorFailureTest extends JUnitSuite {
   }
 
   public EventSourcedActorFailureTest() {
-    // FIXME ##24348 silence logging in a proper way
+    // FIXME #26537 #24348 silence logging in a proper way
     //    akka.actor.typed.javadsl.Adapter.toUntyped(testKit.system())
     //        .eventStream()
     //        .publish(

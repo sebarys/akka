@@ -46,7 +46,7 @@ class LoggingEventFilterSpec extends ScalaTestWithActorTestKit with WordSpecLike
       throwable = Option(cause),
       mdc = Map.empty)
 
-  "The untyped LoggingEventFilter.error" must {
+  "The LoggingEventFilter.error" must {
     "filter errors without cause" in {
       val filter = LoggingEventFilter.error()
       filter(errorNoCause) should ===(true)
@@ -64,7 +64,7 @@ class LoggingEventFilterSpec extends ScalaTestWithActorTestKit with WordSpecLike
     }
   }
 
-  "The typed LoggingEventFilter" must {
+  "The LoggingEventFilter[Exc]" must {
     "not filter errors without cause" in {
       val filter = LoggingEventFilter[AnError]()
       filter(errorNoCause) should ===(false)
@@ -86,7 +86,7 @@ class LoggingEventFilterSpec extends ScalaTestWithActorTestKit with WordSpecLike
     }
   }
 
-  "The untyped LoggingEventFilter.warning" must {
+  "The LoggingEventFilter.warning" must {
     "filter warnings without cause" in {
       val filter = LoggingEventFilter.warning()
       filter(warningNoCause) should ===(true)

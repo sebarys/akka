@@ -12,6 +12,7 @@ import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
 import akka.actor.typed.Behavior
 import akka.actor.typed.scaladsl.adapter._
 import org.scalatest.WordSpecLike
+import org.slf4j.LoggerFactory
 import org.slf4j.event.Level
 import org.slf4j.helpers.BasicMarkerFactory
 
@@ -77,19 +78,27 @@ class ActorLoggingSpec extends ScalaTestWithActorTestKit("""
         }
       }
 
-      // FIXME verify that it's logged with `AnotherLoggerClass`
-      // FIXME verify that it's only capturing log events for that logger and not any other logger
-
       val actor =
         LoggingEventFilter.info("Started", occurrences = 1).interceptLogger(classOf[AnotherLoggerClass].getName) {
           spawn(behavior, "the-other-actor")
         }
 
+      // verify that it's logged with `AnotherLoggerClass`
+      // verify that it's only capturing log events for that logger and not any other logger when interceptLogger
+      // is used
+      val count = new AtomicInteger
       LoggingEventFilter
-        .info("got message Hello", occurrences = 1)
+        .custom({
+          case logEvent =>
+            count.incrementAndGet()
+            logEvent.message == "got message Hello" && logEvent.loggerName == classOf[AnotherLoggerClass].getName
+        }, occurrences = 2)
         .interceptLogger(classOf[AnotherLoggerClass].getName) {
           actor ! "Hello"
+          LoggerFactory.getLogger(classOf[ActorLoggingSpec]).debug("Hello from other logger")
+          actor ! "Hello"
         }
+      count.get should ===(2)
 
     }
 
@@ -138,7 +147,7 @@ class ActorLoggingSpec extends ScalaTestWithActorTestKit("""
     }
 
     "allow for adapting log source and class" in {
-      //TODO WIP...
+      // FIXME #26537
       pending
 //      val eventFilter = custom({
 //        case l: ILoggingEvent =>
@@ -248,14 +257,10 @@ class ActorLoggingSpec extends ScalaTestWithActorTestKit("""
 
   "Logging with MDC for a typed actor" must {
 
-    // FIXME replace all LoggingEventFilter with typed LoggingEventFilter
-    pending
-
     "provide the MDC values in the log" in {
       val behaviors = Behaviors.withMdc[Protocol](
         Map("static" -> "1"),
         // FIXME why u no infer the type here Scala??
-        //TODO review that change from Map[String,Any] to Map[String,String] is viable
         (message: Protocol) =>
           if (message.transactionId == 1)
             Map("txId" -> message.transactionId.toString, "first" -> "true")
@@ -269,7 +274,7 @@ class ActorLoggingSpec extends ScalaTestWithActorTestKit("""
         }
       }
 
-      // mdc on defer is empty (thread and timestamp MDC is added by logger backend)
+      // mdc on defer is empty
       val ref = LoggingEventFilter
         .custom(
           {
@@ -290,7 +295,7 @@ class ActorLoggingSpec extends ScalaTestWithActorTestKit("""
           {
             case logEvent if logEvent.level == Level.INFO =>
               logEvent.message should ===("Got message!")
-              logEvent.mdc should ===(Map("static" -> "1", "txId" -> "1L", "first" -> "true"))
+              logEvent.mdc should ===(Map("static" -> "1", "txId" -> "1", "first" -> "true"))
               true
             case other => system.log.error(s"Unexpected log event: {}", other); false
           },
@@ -305,7 +310,7 @@ class ActorLoggingSpec extends ScalaTestWithActorTestKit("""
           {
             case logEvent if logEvent.level == Level.INFO =>
               logEvent.message should ===("Got message!")
-              logEvent.mdc should ===(Map("static" -> "1", "txId" -> "2L"))
+              logEvent.mdc should ===(Map("static" -> "1", "txId" -> "2"))
               true
             case other => system.log.error(s"Unexpected log event: {}", other); false
           },
@@ -438,10 +443,9 @@ class ActorLoggingSpec extends ScalaTestWithActorTestKit("""
     "provide a withMdc decorator" in {
       val behavior = Behaviors.withMdc[Protocol](Map("mdc" -> "outer"))(Behaviors.setup { context =>
         Behaviors.receiveMessage { _ =>
-          org.slf4j.MDC.put("mdc", "inner")
-          context.log.info("Got message log.withMDC!")
-          // after log.withMdc so we know it didn't change the outer mdc
-          context.log.info("Got message behavior.withMdc!")
+          context.log.info("first")
+          org.slf4j.MDC.put("mdc", "inner-" + org.slf4j.MDC.get("mdc"))
+          context.log.info("second")
           Behaviors.same
         }
       })
@@ -452,7 +456,7 @@ class ActorLoggingSpec extends ScalaTestWithActorTestKit("""
         .custom(
           {
             case logEvent if logEvent.level == Level.INFO =>
-              logEvent.message should ===("Got message behavior.withMdc!")
+              logEvent.message should ===("first")
               logEvent.mdc should ===(Map("mdc" -> "outer"))
               true
             case other => system.log.error(s"Unexpected log event: {}", other); false
@@ -463,8 +467,8 @@ class ActorLoggingSpec extends ScalaTestWithActorTestKit("""
             .custom(
               {
                 case logEvent if logEvent.level == Level.INFO =>
-                  logEvent.message should ===("Got message log.withMDC!")
-                  logEvent.mdc should ===(Map("mdc" -> "inner"))
+                  logEvent.message should ===("second")
+                  logEvent.mdc should ===(Map("mdc" -> "inner-outer"))
                   true
                 case other => system.log.error(s"Unexpected log event: {}", other); false
               },

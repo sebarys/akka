@@ -209,10 +209,10 @@ private[akka] final class ReplayingEvents[C, E, S](
     val msg = event match {
       case Some(_: Message) | None =>
         s"Exception during recovery. Last known sequence number [$sequenceNr]. " +
-        s"PersistenceId [${setup.persistenceId.id}]. ${cause.getMessage}"
+        s"PersistenceId [${setup.persistenceId.id}], due to: ${cause.getMessage}"
       case Some(evt) =>
         s"Exception during recovery while handling [${evt.getClass.getName}] with sequence number [$sequenceNr]. " +
-        s"PersistenceId [${setup.persistenceId.id}]. ${cause.getMessage}"
+        s"PersistenceId [${setup.persistenceId.id}], due to: ${cause.getMessage}"
     }
 
     throw new JournalFailureException(msg, cause)

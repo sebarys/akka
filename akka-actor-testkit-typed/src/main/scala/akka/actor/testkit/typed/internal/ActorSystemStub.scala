@@ -22,14 +22,14 @@ import akka.util.Timeout
 import akka.{ actor => untyped }
 import akka.Done
 import com.typesafe.config.ConfigFactory
-
 import scala.compat.java8.FutureConverters
 import scala.concurrent._
+
 import akka.actor.ActorRefProvider
 import akka.actor.typed.internal.InternalRecipientRef
 import com.github.ghik.silencer.silent
 import org.slf4j.Logger
-import org.slf4j.helpers.SubstituteLoggerFactory
+import org.slf4j.LoggerFactory
 
 /**
  * INTERNAL API
@@ -106,7 +106,5 @@ import org.slf4j.helpers.SubstituteLoggerFactory
   def hasExtension(ext: ExtensionId[_ <: Extension]): Boolean =
     throw new UnsupportedOperationException("ActorSystemStub cannot register extensions")
 
-  val loggerFactory = new SubstituteLoggerFactory()
-
-  def log: Logger = loggerFactory.getLogger("StubbedLogger")
+  def log: Logger = LoggerFactory.getLogger(getClass)
 }

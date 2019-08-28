@@ -8,7 +8,6 @@ import akka.actor.UnhandledMessage
 import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
 import akka.actor.testkit.typed.TestException
 import akka.actor.testkit.typed.scaladsl.LoggingEventFilter
-import akka.actor.typed.scaladsl.adapter._
 import akka.actor.typed.ActorRef
 import akka.actor.typed.Behavior
 import akka.actor.typed.PostStop
@@ -34,8 +33,6 @@ object MessageAdapterSpec {
 }
 
 class MessageAdapterSpec extends ScalaTestWithActorTestKit(MessageAdapterSpec.config) with WordSpecLike {
-
-  implicit val untyped = system.toUntyped // FIXME #24348: eventfilter support in typed testkit
 
   "Message adapters" must {
 

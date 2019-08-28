@@ -116,7 +116,7 @@ abstract class ActorContextSpec extends ScalaTestWithActorTestKit("""
 
       actor ! Miss
       probe.expectMessage(Missed)
-      // FIXME why no UnhandledMessage?
+      // FIXME #26537 why no UnhandledMessage?
       //unhandledProbe.receiveMessage()
 
       actor ! Renew(probe.ref)

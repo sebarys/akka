@@ -168,12 +168,14 @@ private[akka] object PersistenceMdc {
   val PersistenceIdKey = "persistenceId"
 
   def setMdc(persistenceId: PersistenceId, phase: String): Unit = {
-    MDC.put(PersistenceIdKey, persistenceId.id)
-    MDC.put(PersistencePhaseKey, phase)
+    val mdcAdpater = MDC.getMDCAdapter
+    mdcAdpater.put(PersistenceIdKey, persistenceId.id)
+    mdcAdpater.put(PersistencePhaseKey, phase)
   }
 
   def clearMdc(): Unit = {
-    MDC.remove(PersistenceIdKey)
-    MDC.remove(PersistencePhaseKey)
+    val mdcAdpater = MDC.getMDCAdapter
+    mdcAdpater.remove(PersistenceIdKey)
+    mdcAdpater.remove(PersistencePhaseKey)
   }
 }
