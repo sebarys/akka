@@ -7,6 +7,7 @@ package akka.actor.typed.scaladsl
 import java.util.concurrent.atomic.AtomicInteger
 
 import akka.actor.testkit.typed.TestException
+import akka.actor.testkit.typed.internal.WithLogCapturing
 import akka.actor.testkit.typed.scaladsl.LoggingEventFilter
 import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
 import akka.actor.typed.Behavior
@@ -39,7 +40,7 @@ class BehaviorWhereTheLoggerIsUsed(context: ActorContext[String]) extends Abstra
 
 class ActorLoggingSpec extends ScalaTestWithActorTestKit("""
     akka.loglevel = DEBUG # test verifies debug
-    """) with WordSpecLike {
+    """) with WordSpecLike with WithLogCapturing {
 
   val marker = new BasicMarkerFactory().getMarker("marker")
   val cause = TestException("böö")
